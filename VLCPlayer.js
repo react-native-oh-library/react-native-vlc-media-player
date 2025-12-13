@@ -4,235 +4,148 @@ import ReactNative from "react-native";
 const { Component } = React;
 
 import PropTypes from "prop-types";
-import resolveAssetSource from "react-native/Libraries/Image/resolveAssetSource";
+import RNVLC, {Commands as VLCCommands} from './RNVLCNativeComponent';
 
 const { StyleSheet, requireNativeComponent, NativeModules, View, UIManager } = ReactNative;
 
 export default class VLCPlayer extends Component {
-  constructor(props, context) {
-    super(props, context);
-    this.seek = this.seek.bind(this);
-    this.resume = this.resume.bind(this);
-    this._assignRoot = this._assignRoot.bind(this);
-    this._onError = this._onError.bind(this);
-    this._onProgress = this._onProgress.bind(this);
-    this._onEnded = this._onEnded.bind(this);
-    this._onPlaying = this._onPlaying.bind(this);
-    this._onStopped = this._onStopped.bind(this);
-    this._onPaused = this._onPaused.bind(this);
-    this._onBuffering = this._onBuffering.bind(this);
-    this._onOpen = this._onOpen.bind(this);
-    this._onLoadStart = this._onLoadStart.bind(this);
-    this._onLoad = this._onLoad.bind(this);
-    this._onRecordingState = this._onRecordingState.bind(this);
-    this._onSnapshot = this._onSnapshot.bind(this);
-    this.changeVideoAspectRatio = this.changeVideoAspectRatio.bind(this);
-  }
+  mRNVLCRef: React.ElementRef<typeof RNVLC> | null =null;
   static defaultProps = {
     autoplay: true,
   };
 
-  setNativeProps(nativeProps) {
-    this._root.setNativeProps(nativeProps);
-  }
-
-  startRecording(path) {
-    UIManager.dispatchViewManagerCommand(
-      ReactNative.findNodeHandle(this),
-      UIManager.getViewManagerConfig('RCTVLCPlayer').Commands
-        .startRecording,
-      [path],
-    );
-  }
-
-  stopRecording() {
-    UIManager.dispatchViewManagerCommand(
-      ReactNative.findNodeHandle(this),
-      UIManager.getViewManagerConfig('RCTVLCPlayer').Commands.stopRecording,
-      []
-    );
-  }
-
-  stopPlayer() {
-    UIManager.dispatchViewManagerCommand(
-      ReactNative.findNodeHandle(this),
-      UIManager.getViewManagerConfig('RCTVLCPlayer').Commands.stopPlayer,
-      []
-    );
-  }
-
   snapshot(path) {
-    UIManager.dispatchViewManagerCommand(
-      ReactNative.findNodeHandle(this),
-      UIManager.getViewManagerConfig('RCTVLCPlayer').Commands.snapshot,
-      [path]
-    );
+    if(this.mRNVLCRef){
+      VLCCommands.snapshot(this.mRNVLCRef, path);
+    }
   }
 
   seek(pos) {
-    this.setNativeProps({ seek: pos });
+    if(this.mRNVLCRef){
+      VLCCommands.seek(this.mRNVLCRef, pos);
+    }
   }
 
   resume(isResume) {
-    this.setNativeProps({ resume: isResume });
+    if(this.mRNVLCRef){
+      VLCCommands.resume(this.mRNVLCRef, isResume);
+    }
   }
 
   autoAspectRatio(isAuto) {
-    this.setNativeProps({ autoAspectRatio: isAuto });
+    this._root.setNativeProps({ autoAspectRatio: isAuto });
   }
 
   changeVideoAspectRatio(ratio) {
-    this.setNativeProps({ videoAspectRatio: ratio });
+    this._root.setNativeProps({ videoAspectRatio: ratio });
   }
 
-  _assignRoot(component) {
-    this._root = component;
+  stopPlayer() {
+    if(this.mRNVLCRef){
+      VLCCommands.stopPlayer(this.mRNVLCRef);
+    }
   }
 
-  _onBuffering(event) {
+  onBuffering = e => {
     if (this.props.onBuffering) {
-      this.props.onBuffering(event.nativeEvent);
+      this.props.onBuffering(e.nativeEvent);
     }
   }
 
-  _onError(event) {
-    if (this.props.onError) {
-      this.props.onError(event.nativeEvent);
+  onPaused = e => {
+    if (this.props.onPaused) {
+      this.props.onPaused(e.nativeEvent);
     }
   }
 
-  _onOpen(event) {
+  onOpen = e => {
     if (this.props.onOpen) {
-      this.props.onOpen(event.nativeEvent);
+      this.props.onOpen(e.nativeEvent);
     }
   }
 
-  _onLoadStart(event) {
-    if (this.props.onLoadStart) {
-      this.props.onLoadStart(event.nativeEvent);
-    }
-  }
-
-  _onProgress(event) {
-    if (this.props.onProgress) {
-      this.props.onProgress(event.nativeEvent);
-    }
-  }
-
-  _onEnded(event) {
+  onEnded = e => {
     if (this.props.onEnd) {
-      this.props.onEnd(event.nativeEvent);
+      this.props.onEnd(e.nativeEvent);
     }
   }
 
-  _onStopped() {
-    this.setNativeProps({ paused: true });
+  onStopped = e => {
     if (this.props.onStopped) {
       this.props.onStopped();
     }
   }
 
-  _onPaused(event) {
-    if (this.props.onPaused) {
-      this.props.onPaused(event.nativeEvent);
-    }
-  }
-
-  _onPlaying(event) {
+  onPlaying = e => {
     if (this.props.onPlaying) {
-      this.props.onPlaying(event.nativeEvent);
+      this.props.onPlaying(e.nativeEvent);
     }
   }
 
-  _onLoad(event) {
+  onSnapshot = e => {
+    if (this.props.onSnapshot) {
+      this.props.onSnapshot(e.nativeEvent);
+    }
+  }
+
+  onLoadStart = e => {
+    if (this.props.onLoadStart) {
+      this.props.onLoadStart(e.nativeEvent);
+    }
+  }
+
+  onProgress = e => {
+    if (this.props.onProgress) {
+      this.props.onProgress(e.nativeEvent);
+    }
+  }
+
+  onEnd = e => {
+    if (this.props.onEnd) {
+      this.props.onEnd(e.nativeEvent);
+    }
+  }
+
+  onError = e => {
+    if (this.props.onError) {
+      this.props.onError(e.nativeEvent);
+    }
+  }
+
+  onLoad = e => {
     if (this.props.onLoad) {
-      this.props.onLoad(event.nativeEvent);
+      this.props.onLoad(e.nativeEvent);
     }
   }
 
-  _onRecordingState(event) {
-    if (this.lastRecording === event.nativeEvent.recordPath) {
-      return;
-    }
-
-    if (!event.nativeEvent.isRecording && event.nativeEvent.recordPath) {
-      this.lastRecording = event.nativeEvent.recordPath;
-      this.props.onRecordingCreated(this.lastRecording);
-    }
-  }
-
-  _onSnapshot(event) {
-    if (event.nativeEvent.success && this.props.onSnapshot) {
-      this.props.onSnapshot(event.nativeEvent);
-    }
+  assignRoot = component => {
+    this._root = component;
+    this.mRNVLCRef = component;
   }
 
   render() {
-    /* const {
-     source
-     } = this.props;*/
-    const source = resolveAssetSource(this.props.source) || {};
-
-    let uri = source.uri || "";
-    if (uri && uri.match(/^\//)) {
-      uri = `file://${uri}`;
-    }
-
-    let isNetwork = !!(uri && uri.match(/^https?:/));
-    const isAsset = !!(
-      uri && uri.match(/^(assets-library|file|content|ms-appx|ms-appdata):/)
+    const stylesCombined = [styles.base, this.props.styles];
+    return (
+      <RNVLC
+        {...this.props}
+        styles={stylesCombined}
+        ref={this.assignRoot}
+        onPlaying = {this.onPlaying}
+        onProgress = {this.onProgress}
+        onPaused = {this.onPaused}
+        onStopped = {this.onStopped}
+        onBuffering = {this.onBuffering}
+        onEnd = {this.onEnd}
+        onError = {this.onError}
+        onLoad = {this.onLoad}
+        onSnapshot = {this.onSnapshot}
+        onOpen = {this.onOpen}
+      />
     );
-    if (!isAsset) {
-      isNetwork = true;
-    }
-    if (uri && uri.match(/^\//)) {
-      isNetwork = false;
-    }
-    source.isNetwork = isNetwork;
-    source.autoplay = this.props.autoplay;
-    source.initOptions = source.initOptions || [];
-
-    if (this.props.repeat) { 
-      const existingRepeat = source.initOptions.find(item => item.startsWith('--repeat') || item.startsWith('--input-repeat'));
-      if (!existingRepeat) {
-        source.initOptions.push("--repeat");
-      }
-    }
-
-    const nativeProps = Object.assign({}, this.props);
-    Object.assign(nativeProps, {
-      style: [styles.base, nativeProps.style],
-      source: source,
-      src: {
-        uri,
-        isNetwork,
-        isAsset,
-        type: source.type || "",
-        mainVer: source.mainVer || 0,
-        patchVer: source.patchVer || 0,
-      },
-      onVideoLoadStart: this._onLoadStart,
-      onVideoOpen: this._onOpen,
-      onVideoError: this._onError,
-      onVideoProgress: this._onProgress,
-      onVideoEnded: this._onEnded,
-      onVideoEnd: this._onEnded,
-      onVideoPlaying: this._onPlaying,
-      onVideoPaused: this._onPaused,
-      onVideoStopped: this._onStopped,
-      onVideoBuffering: this._onBuffering,
-      onVideoLoad: this._onLoad,
-      onRecordingState: this._onRecordingState,
-      onSnapshot: this._onSnapshot,
-      progressUpdateInterval: this.props.onProgress ? 250 : 0,
-    });
-
-    return <RCTVLCPlayer ref={this._assignRoot} {...nativeProps} />;
   }
 }
 
 VLCPlayer.propTypes = {
-  /* Native only */
   rate: PropTypes.number,
   seek: PropTypes.number,
   resume: PropTypes.bool,
@@ -252,38 +165,18 @@ VLCPlayer.propTypes = {
   audioTrack: PropTypes.number,
   textTrack: PropTypes.number,
   acceptInvalidCertificates: PropTypes.bool,
+  progressUpdateInterval: PropTypes.number,
 
-  onVideoLoadStart: PropTypes.func,
-  onVideoError: PropTypes.func,
-  onVideoProgress: PropTypes.func,
-  onVideoEnded: PropTypes.func,
-  onVideoPlaying: PropTypes.func,
-  onVideoPaused: PropTypes.func,
-  onVideoStopped: PropTypes.func,
-  onVideoBuffering: PropTypes.func,
-  onVideoOpen: PropTypes.func,
-  onVideoLoad: PropTypes.func,
-
-  /* Wrapper component */
-  source: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
-  subtitleUri: PropTypes.string,
-  autoplay: PropTypes.bool,
-
-  onError: PropTypes.func,
-  onProgress: PropTypes.func,
-  onEnded: PropTypes.func,
-  onStopped: PropTypes.func,
   onPlaying: PropTypes.func,
+  onProgress: PropTypes.func,
   onPaused: PropTypes.func,
-  onRecordingCreated: PropTypes.func,
-
-  /* Required by react-native */
-  scaleX: PropTypes.number,
-  scaleY: PropTypes.number,
-  translateX: PropTypes.number,
-  translateY: PropTypes.number,
-  rotation: PropTypes.number,
-  ...View.propTypes,
+  onStopped: PropTypes.func,
+  onBuffering: PropTypes.func,
+  onEnd: PropTypes.func,
+  onError: PropTypes.func,
+  onLoad: PropTypes.func,
+  onSnapshot: PropTypes.func,
+  onOpen: PropTypes.func,
 };
 
 const styles = StyleSheet.create({
@@ -291,4 +184,3 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 });
-const RCTVLCPlayer = requireNativeComponent("RCTVLCPlayer", VLCPlayer);

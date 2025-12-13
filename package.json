@@ -1,39 +1,62 @@
 {
-  "name": "react-native-vlc-media-player",
-  "version": "1.0.98",
-  "description": "React native media player for video streaming and playing. Supports RTSP,RTMP and other protocols supported by VLC player",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "name": "@react-native-ohos/react-native-vlc-media-player",
+  "version": "1.0.89-rc1",
+  "description": "todo",
   "keywords": [
-    "vlc",
-    "player",
-    "android",
-    "ios",
+    "todo",
+    "react-component",
     "react-native",
-    "mp4",
-    "rtsp",
-    "media",
-    "video"
+    "ios"
   ],
-  "author": "rmilinda@gmail.com",
-  "dependencies": {
-    "react-native-slider": "^0.11.0",
-    "react-native-vector-icons": "^9.2.0"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/razorRun/react-native-vlc-media-player.git"
+    "url": "https://todo"
   },
+  "homepage": "https://todo",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+    },
+  "main": "index.js",
+  "files": [
+    "__tests__/",
+    "/harmony",
+    "lib/",
+    "src/",
+    "jest/",
+    "web/",
+    "windows/",
+    "VLCPlayer.js",
+    "index.d.ts",
+    "RNVLCNativeComponent.ts"
+  ],
+  "types": "index.d.ts",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/razorRun/react-native-vlc-media-player/issues"
+  "scripts": {
+    "lint": "eslint --ext js,ts,tsx .",
+    "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name react-native-vlc-media-player --cpp-output-path ./harmony/rn_vlc/src/main/cpp/generated --ets-output-path ./harmony/rn_vlc/src/main/ets/generated --arkts-components-spec-paths ./RNVLCNativeComponent.ts",
+    "codegen-lib-test": "react-native codegen-lib-harmony --no-safety-check --npm-package-name react-native-vlc-media-player --cpp-output-path ./harmony/rn_vlc/src/main/cpp/generated1 --ets-output-path ./harmony/rn_vlc/src/main/ets/generated1 --arkts-components-spec-paths ./RNVLCNativeComponent.ts"
+   
   },
-  "homepage": "https://github.com/razorRun/react-native-vlc-media-player#readme",
+  "dependencies": {
+    "prop-types": "^15.5.10",
+    "react-native-vlc-media-player": "1.0.88"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
   "devDependencies": {
-    "@expo/config-plugins": "^7.2.2",
-    "@types/react": "~18.2.14"
+    "@react-native-community/eslint-config": "^0.0.5",
+    "@types/react": "^18.2.47",
+    "@types/react-native": "^0.60.9",
+    "eslint": "^5.16.0",
+    "react": "18.2.0",
+    "react-native": "0.72.5",
+    "typescript": "^3.5.3",
+    "@rnoh/react-native-harmony-cli": "npm:@react-native-oh/react-native-harmony-cli@^0.0.27"
   },
-  "typings": "index.d.ts"
+  "harmony": {
+    "alias": "react-native-vlc-media-player"
+  }
 }
