@@ -1,23 +1,31 @@
-/*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/**
+ * MIT License
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (C) 2024 Huawei Device Co., Ltd.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * Ï
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANT KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
- 
-import { RNViewBase, RNComponentContext } from '@rnoh/react-native-openharmony'
+import { RNViewBase, RNComponentContext, LogBoxDialog } from '@rnoh/react-native-openharmony'
 import { RNC } from "./generated/index"
 import { componentSnapshot } from '@kit.ArkUI';
 import { LibVLC, Media, MediaListener, MediaPlayer, MediaPlayerListener, Description } from '@ohos/vlc'
-import { ArrayList, JSON, util } from '@kit.ArkTS';
+import { JSON, util } from '@kit.ArkTS';
 import { image } from '@kit.ImageKit';
 import fs from '@ohos.file.fs';
 
@@ -92,6 +100,7 @@ export struct RNVLC {
     },
     onMediaPlayerEncounteredError: () => {
       this.releasePlayer();
+      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "error",{});
     },
     onMediaPlayerTimeChanged: (para: number) => {
       this.updateVideoProgress();
@@ -240,7 +249,7 @@ export struct RNVLC {
       const oldVal = oldProps[propName as keyof RNC.RNVLC.DirectRawProps];
 
       if (newVal !== undefined && newVal !== oldVal) {
-        console.info(`update prop ${propName}: ${oldVal} -> ${newVal}`);
+        console.info(`rnvlc update prop ${propName}: ${oldVal} -> ${newVal}`);
         handler(newVal);
       }
     });
@@ -272,6 +281,11 @@ export struct RNVLC {
     this.callbackList.push(this.ctx.descriptorRegistry.subscribeToDescriptorChanges(this.tag,
       (newDescriptor) => {
         this.processDescriptorChanges(newDescriptor as RNC.RNVLC.Descriptor)
+        const prop = newDescriptor as RNC.RNVLC.Descriptor;
+        if (prop.rawProps.source?.uri && this.localURL != prop.rawProps.source.uri) {
+          this.localURL = prop.rawProps.source.uri;
+          this.createPlayer(true, false);
+        }
       }
     ))
 
@@ -284,7 +298,7 @@ export struct RNVLC {
     this.callbackList.push(this.ctx.componentCommandReceiver.registerCommandCallback(
       this.tag,
       (command, args: (string | number)[]) => {
-        console.info(`command : ${command} ${JSON.stringify(args)}`);
+        console.info(`rnvlc command : ${command} ${JSON.stringify(args)}`);
         if (command === "snapshot") {
           this.snapshot(String(args[0]));
         } else if (command === "seek") {
@@ -339,6 +353,7 @@ export struct RNVLC {
 
   createPlayer(autoplayResume: boolean, isResume: boolean) {
     if (!this.descriptor.rawProps.source?.uri) {
+      console.log(`rnvlc uri is undefined`);
       return
     }
 
@@ -356,24 +371,26 @@ export struct RNVLC {
     this.mediaPlayer.setVideoOut(this.xComponentId);
     this.mediaPlayer.addListener(this.mediaPlayerListener);
 
-    console.info(`video path: ${this.descriptor.rawProps.source?.uri}`);
+    console.info(`rnvlc video path: ${this.descriptor.rawProps.source?.uri}`);
     this.media = new Media(this.vlc, this.descriptor.rawProps.source?.uri ?? "");
     this.media.addListener(this.mediaListener);
     this.media.parse();
     this.mediaPlayer.setMedia(this.media);
 
     if (this.descriptor.rawProps.subtitleUri) {
-      console.info(`subtitleUri path: ${this.descriptor.rawProps.subtitleUri}`);
+      console.info(`rnvlc subtitleUri path: ${this.descriptor.rawProps.subtitleUri}`);
       this.mediaPlayer.addSlave(0, this.descriptor.rawProps.subtitleUri, true);
     }
 
     this.watchedProps.forEach((handler, propName) => {
       const val = this.descriptor.rawProps[propName as keyof RNC.RNVLC.DirectRawProps];
       if (val) {
-        console.log(`init prop: ${propName}: ${val}`)
+        console.log(`rnvlc init prop: ${propName}: ${val}`)
         handler(val);
       }
     });
+
+    console.log(`rnvlc play props: ${isResume}, ${autoplayResume}, ${this.descriptor.rawProps.autoplay}`);
     if (isResume) {
       if (autoplayResume) {
         this.mediaPlayer.play();
