@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "react-native-vlc-media-player",
+        "License": "MIT License",
+        "License File": "https://github.com/razorRun/react-native-vlc-media-player/blob/master/LICENSE",
+        "Version Number": "1.0.88",
+        "Owner" : "xiafeng@huawei.com",
+        "Upstream URL": "https://github.com/razorRun/react-native-vlc-media-player",
+        "Description": "React native media player for video streaming and playing. Supports RTSP, RTMP and other protocols supported by VLC player"
+    }
+]
