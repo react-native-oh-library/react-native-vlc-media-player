@@ -24,7 +24,7 @@ struct RNVLCSourceStruct {
 };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNVLCSourceStruct &result) {
-  auto map = (std::unordered_map<std::string, RawValue>)value;
+  auto map = (butter::map<std::string, RawValue>)value;
 
   auto tmp_uri = map.find("uri");
   if (tmp_uri != map.end()) {
