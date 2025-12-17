@@ -35,7 +35,8 @@ RNVLCProps::RNVLCProps(
     videoAspectRatio(convertRawProp(context, rawProps, "videoAspectRatio", sourceProps.videoAspectRatio, {})),
     autoAspectRatio(convertRawProp(context, rawProps, "autoAspectRatio", sourceProps.autoAspectRatio, {false})),
     resizeMode(convertRawProp(context, rawProps, "resizeMode", sourceProps.resizeMode, {})),
-    progressUpdateInterval(convertRawProp(context, rawProps, "progressUpdateInterval", sourceProps.progressUpdateInterval, {0}))
+    progressUpdateInterval(convertRawProp(context, rawProps, "progressUpdateInterval", sourceProps.progressUpdateInterval, {0})),
+    acceptInvalidCertificates(convertRawProp(context, rawProps, "acceptInvalidCertificates", sourceProps.acceptInvalidCertificates, {false}))
       {}
 
 } // namespace react

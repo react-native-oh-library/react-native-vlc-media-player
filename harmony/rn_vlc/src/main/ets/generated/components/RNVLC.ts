@@ -36,6 +36,7 @@ export namespace RNVLC {
     autoAspectRatio?: boolean;
     resizeMode?: string;
     progressUpdateInterval?: number;
+    acceptInvalidCertificates?: boolean;
   }
   
   export interface Props extends ViewBaseProps {}
@@ -107,6 +108,10 @@ export namespace RNVLC {
     
     get progressUpdateInterval() {
       return this.rawProps.progressUpdateInterval ?? 0;
+    }
+    
+    get acceptInvalidCertificates() {
+      return this.rawProps.acceptInvalidCertificates ?? false;
     }
     
   

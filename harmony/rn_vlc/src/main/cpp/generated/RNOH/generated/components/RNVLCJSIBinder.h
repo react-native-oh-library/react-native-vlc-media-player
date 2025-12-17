@@ -26,6 +26,7 @@ class RNVLCJSIBinder : public ViewComponentJSIBinder {
         object.setProperty(rt, "autoAspectRatio", true);
         object.setProperty(rt, "resizeMode", true);
         object.setProperty(rt, "progressUpdateInterval", true);
+        object.setProperty(rt, "acceptInvalidCertificates", true);
         return object;
     }
 
