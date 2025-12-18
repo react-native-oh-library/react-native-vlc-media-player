@@ -21,10 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { RNViewBase, RNComponentContext, LogBoxDialog } from '@rnoh/react-native-openharmony'
+import { RNViewBase, RNComponentContext } from '@rnoh/react-native-openharmony'
 import { RNC } from "./generated/index"
 import { componentSnapshot } from '@kit.ArkUI';
-import { LibVLC, Media, MediaListener, MediaPlayer, MediaPlayerListener, Description } from '@ohos/vlc'
+import { LibVLC, Media, MediaListener, MediaPlayer, MediaPlayerListener, Description, libvlc_event_e,
+  DialogListener,
+  ErrorDialog,
+  LoginDialog,
+  ProgressDialog,
+  CanceledDialog,
+  UpdateProgressDialog,
+  QuestionDialog,Dialog,libvlc_dialog_question_type} from '@ohos/vlc'
 import { JSON, util } from '@kit.ArkTS';
 import { image } from '@kit.ImageKit';
 import fs from '@ohos.file.fs';
@@ -40,7 +47,6 @@ export struct RNVLC {
   preVolume: number = 100;
   isPaused: boolean = true;
   autoAspectRatio: boolean = false;
-
   screenWidth: number = 0;
   screenHeight: number = 0;
   viewWidth: number | 'auto' | `${number}%` = 0;
@@ -48,62 +54,103 @@ export struct RNVLC {
   prevVideoSize: Size = { width: 0, height: 0 };
   prevAudioTracks: Array<Description> = []
   prevTextTracks: Array<Description> = []
-
   vlc: LibVLC | null = null;
   mediaPlayer: MediaPlayer | null = null;
   media: Media | null = null;
   xComponentId = '__OHOS_VLC__' + util.generateRandomUUID();
   callbackList: Array<() => void> = []
-
   mediaListener: MediaListener = {
-    onMediaParsedChanged: () => {
+    onMediaEventCallback: (type: libvlc_event_e) => {
+
+    }
+  }
+  dialogListener: DialogListener = {
+    onQuestion: (data: QuestionDialog) => {
+      if (data.text !== "" && (data.text.includes("certificate") || data.text.includes("SSL") || data.text.includes("TLS") || data.text.includes("cert"))) {
+        if (this.descriptor.rawProps.acceptInvalidCertificates) {
+          data.postAction(1);
+        } else {
+          data.postAction(2);
+        }
+      } else {
+        data.dismiss();
+      }
+    },
+    onError: (data: ErrorDialog): void => {
+    },
+    onLogin: (data: LoginDialog): void => {
+    },
+    onProgress: (data: ProgressDialog): void => {
+    },
+    onCanceled: (data: CanceledDialog): void => {
+    },
+    onUpdateProgress: (data: UpdateProgressDialog): void => {
     }
   }
   mediaPlayerListener: MediaPlayerListener = {
-    onMediaPlayerOpening: () => {
-      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "open",{});
-      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "load",{});
-    },
-    onMediaPlayerPaused: () => {
-      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "paused",{});
-    },
-    onMediaPlayerStopped:() => {
-      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "stopped", {});
-    },
-    onMediaPlayerBuffering: (para1: number) => {
-      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "buffering",{});
-    },
-    onMediaPlayerPlaying: () => {
-      this.ctx.rnInstance.emitComponentEvent(
-        this.descriptor.tag,
-        "playing",
-        {
-          seekable: this.mediaPlayer?.isSeekable(),
-          duration: this.mediaPlayer?.getLength(),
+    onEvent: (type: libvlc_event_e, para1: number, para2: number, para3: number) => {
+      switch (type) {
+        case libvlc_event_e.libvlc_MediaPlayerOpening: {
+          this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "open", {});
+          this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "load", {});
+          break
         }
-      );
-    },
-    onMediaPlayerEndReached: () => {
-      let currentTime = this.mediaPlayer?.getTime() ?? 0;
-      let length = this.mediaPlayer?.getLength() ?? 0;
 
-      this.ctx.rnInstance.emitComponentEvent(
-        this.descriptor.tag,
-        "end",
-        {
-          currentTime: currentTime,
-          remainingTime: length - currentTime,
-          duration: length,
-          position: this.mediaPlayer?.getPosition(),
+        case libvlc_event_e.libvlc_MediaPlayerPaused: {
+          this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "paused", {});
+          break;
         }
-      );
-    },
-    onMediaPlayerEncounteredError: () => {
-      this.releasePlayer();
-      this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "error",{});
-    },
-    onMediaPlayerTimeChanged: (para: number) => {
-      this.updateVideoProgress();
+
+        case libvlc_event_e.libvlc_MediaPlayerStopped: {
+          this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "stopped", {});
+          break;
+        }
+
+        case libvlc_event_e.libvlc_MediaPlayerBuffering: {
+          this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "buffering", {});
+          break;
+        }
+
+        case libvlc_event_e.libvlc_MediaPlayerPlaying: {
+          this.ctx.rnInstance.emitComponentEvent(
+            this.descriptor.tag,
+            "playing",
+            {
+              seekable: this.mediaPlayer?.isSeekable(),
+              duration: this.mediaPlayer?.getLength(),
+            }
+          );
+          break;
+        }
+
+        case libvlc_event_e.libvlc_MediaPlayerEndReached: {
+          let currentTime = this.mediaPlayer?.getTime() ?? 0;
+          let length = this.mediaPlayer?.getLength() ?? 0;
+
+          this.ctx.rnInstance.emitComponentEvent(
+            this.descriptor.tag,
+            "end",
+            {
+              currentTime: currentTime,
+              remainingTime: length - currentTime,
+              duration: length,
+              position: this.mediaPlayer?.getPosition(),
+            }
+          );
+          break;
+        }
+
+        case libvlc_event_e.libvlc_MediaPlayerEncounteredError: {
+          this.releasePlayer();
+          this.ctx.rnInstance.emitComponentEvent(this.descriptor.tag, "error", {});
+          break;
+        }
+
+        case libvlc_event_e.libvlc_MediaPlayerTimeChanged: {
+          this.updateVideoProgress();
+          break;
+        }
+      }
     }
   }
 
@@ -116,7 +163,7 @@ export struct RNVLC {
     const audioTracksTemp = this.mediaPlayer.getAudioDescription();
     const textTracksTemp = this.mediaPlayer.getSpuDescription();
     let length = this.mediaPlayer?.getLength() ?? 0
-    let time = this.mediaPlayer?.getTime()  ?? 0
+    let time = this.mediaPlayer?.getTime() ?? 0
 
     const videoSizeChanged =
       !this.prevVideoSize ||
@@ -236,6 +283,7 @@ export struct RNVLC {
   }
 
   watchedProps: Map<string, Function> = new Map();
+
   watchProp(propName: string, handler: Function) {
     this.watchedProps.set(propName, handler);
   }
@@ -258,16 +306,24 @@ export struct RNVLC {
   }
 
   aboutToAppear() {
-    this.watchProp('subtitleUri', (val: string) => { this.mediaPlayer?.addSlave(0, val, true);});
+    this.watchProp('subtitleUri', (val: string) => {
+      this.mediaPlayer?.addSlave(0, val, true);
+    });
     this.watchProp('paused', (val: boolean) => {
       this.pausedModifier(val)
     });
     this.watchProp('rate', (val: number) => this.mediaPlayer?.setRate(val));
     this.watchProp('seek', (val: number) => this.mediaPlayer?.setPosition(val));
     this.watchProp('volume', (val: number) => this.mediaPlayer?.setVolume(val));
-    this.watchProp('muted', (val: boolean) => { this.mutedModifier(val) });
-    this.watchProp('audioTrack', (val: number) => { this.mediaPlayer?.setAudioTrack(val) });
-    this.watchProp('textTrack', (val: number) => { this.mediaPlayer?.setTextTrack(val) });
+    this.watchProp('muted', (val: boolean) => {
+      this.mutedModifier(val)
+    });
+    this.watchProp('audioTrack', (val: number) => {
+      this.mediaPlayer?.setAudioTrack(val)
+    });
+    this.watchProp('textTrack', (val: number) => {
+      this.mediaPlayer?.setTextTrack(val)
+    });
     this.watchProp('videoAspectRatio', (val: string) => {
       if (!this.autoAspectRatio) {
         this.mediaPlayer?.setAspectRatio(val)
@@ -333,7 +389,6 @@ export struct RNVLC {
   }
 
   mutedModifier(muted: boolean) {
-    // this.muted = muted;
     if (this.mediaPlayer !== null) {
       if (muted) {
         this.preVolume = this.mediaPlayer.getVolume()
@@ -369,11 +424,12 @@ export struct RNVLC {
     this.mediaPlayer = new MediaPlayer(this.vlc);
     this.mutedModifier(this.descriptor.rawProps?.muted ?? false)
     this.mediaPlayer.setVideoOut(this.xComponentId);
-    this.mediaPlayer.addListener(this.mediaPlayerListener);
+    this.mediaPlayer.setEventListener(this.mediaPlayerListener);
+    Dialog.setCallbacks(this.vlc, this.dialogListener);
 
     console.info(`rnvlc video path: ${this.descriptor.rawProps.source?.uri}`);
     this.media = new Media(this.vlc, this.descriptor.rawProps.source?.uri ?? "");
-    this.media.addListener(this.mediaListener);
+    this.media.setEventListener(this.mediaListener);
     this.media.parse();
     this.mediaPlayer.setMedia(this.media);
 
@@ -404,9 +460,9 @@ export struct RNVLC {
   }
 
   build() {
-    Column(){
+    Column() {
       RNViewBase({ ctx: this.ctx, tag: this.tag }) {
-        XComponent({id : this.xComponentId, type : XComponentType.SURFACE, libraryname : 'vlc_napi'})
+        XComponent({ id: this.xComponentId, type: XComponentType.SURFACE, libraryname: 'vlc_napi' })
           .id(this.xComponentId)
           .width(this.viewWidth)
           .height(this.viewHeight)

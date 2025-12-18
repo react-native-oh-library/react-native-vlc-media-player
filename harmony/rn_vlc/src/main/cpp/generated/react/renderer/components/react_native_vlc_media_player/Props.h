@@ -66,6 +66,7 @@ class RNVLCProps final : public ViewProps {
   bool autoAspectRatio{false};
   std::string resizeMode{};
   int progressUpdateInterval{0};
+  bool acceptInvalidCertificates{false};
 };
 
 } // namespace react

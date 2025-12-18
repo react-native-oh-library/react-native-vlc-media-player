@@ -74,6 +74,7 @@ export interface VLCNativeProps extends ViewProps {
   autoAspectRatio?: WithDefault<boolean, false>;
   resizeMode?: string;
   progressUpdateInterval?: Int32;
+  acceptInvalidCertificates?: WithDefault<boolean, false>;
 
   onPlaying?: DirectEventHandler<PlayingEventData>;
   onProgress?: DirectEventHandler<ProgressEventData>;
