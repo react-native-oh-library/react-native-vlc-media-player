@@ -4,9 +4,9 @@ This project is based on [react-native-vlc-media-player](https://github.com/razo
 
 ## Documentation
 
-[中文](https://gitee.com/react-native-oh-library/usage-docs/blob/master/zh-cn/react-native-vlc-media-player.md)
+[中文](https://gitcode.com/OpenHarmony-RN/usage-docs/blob/master/zh-cn/react-native-vlc-media-player.md)
 
-[English](https://gitee.com/react-native-oh-library/usage-docs/blob/master/en/react-native-vlc-media-player.md)
+[English](https://gitcode.com/OpenHarmony-RN/usage-docs/blob/master/en/react-native-vlc-media-player.md)
 
 ## License
 
