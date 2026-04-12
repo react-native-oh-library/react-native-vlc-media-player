@@ -28,6 +28,12 @@
   },
   "typings": "index.d.ts",
   "harmony": {
-    "alias": "react-native-vlc-media-player"
+    "alias": "react-native-vlc-media-player",
+    "autolinking": {
+      "cppPackageClassName": "RNVlcMediaPlayerPackage",
+      "cmakeLibraryTargetName": "rnoh_vlc",
+      "ohPackageName": "@react-native-ohos/react-native-vlc-media-player",
+      "etsPackageClassName": "RNVLCPackage"
+    }
   }
 }

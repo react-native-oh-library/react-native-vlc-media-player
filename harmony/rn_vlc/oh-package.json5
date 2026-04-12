@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    '@rnoh/react-native-openharmony': '^0.77.59',
-    "@ohos/vlc": "file:./vlc_napi.har"
+    '@rnoh/react-native-openharmony': '0.82.18',
+    "@ohos/vlc": "1.0.1-rc.1"
   }
 }
